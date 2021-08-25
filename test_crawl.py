@@ -30,5 +30,8 @@ def test_crawl_rendered_all(caplog):
 
         assert len(reader) == 12
         for a in range(1,len(reader)):
-            assert reader[a][0] == files_to_be_found[a-1][0]
+            assert reader[a][0] == files_to_be_found[a - 1][0]
             assert reader[a][2] == files_to_be_found[a - 1][2]
+            assert reader[a][3] == files_to_be_found[a - 1][3]
+            assert reader[a][4] == files_to_be_found[a - 1][4]
+            assert reader[a][5] == files_to_be_found[a - 1][5]
