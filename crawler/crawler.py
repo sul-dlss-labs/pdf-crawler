@@ -1,6 +1,9 @@
+import logging
+
 from crawler.helper import get_content_type, call, clean_url
 from crawler.crawl_methods import get_hrefs_html, get_hrefs_js_simple, ClickCrawler
 
+LOGGER = logging.getLogger(__name__)
 
 class Crawler:
     def __init__(self, downloader, get_handlers=None, head_handlers=None, follow_foreign_hosts=False, crawl_method="normal", gecko_path="geckodriver", process_handler=None):
@@ -32,6 +35,7 @@ class Crawler:
                 self.handled.add(clean_url(handled_entry))
 
     def crawl(self, url, depth, previous_url=None, follow=True):
+        LOGGER.info('crawl: url=%s', str(url))
 
         url = clean_url(url)
 
@@ -39,6 +43,7 @@ class Crawler:
             return
 
         response = call(self.session, url)
+        LOGGER.info('crawl: response=%s', str(response))
         if not response:
             return
 
@@ -47,6 +52,7 @@ class Crawler:
         if final_url in self.handled or final_url[-4:] in self.file_endings_exclude:
             return
 
+        LOGGER.info('crawl: final_url=%s', str(final_url))
         print(final_url)
 
         # Type of content on page at url

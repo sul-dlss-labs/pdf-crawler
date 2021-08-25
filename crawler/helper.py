@@ -4,8 +4,9 @@ from crawler.proxy import ProxyManager
 import re
 from urllib.parse import urlparse,urlunparse
 
-pm = ProxyManager()
-log = logging.getLogger(__name__)
+TIMEOUT=60
+PROXY_MANAGER = ProxyManager()
+LOGGER = logging.getLogger(__name__)
 
 def clean_url(url):
 
@@ -43,27 +44,42 @@ def get_content_type(response):
 @lru_cache(maxsize=8192)
 def call(session, url, use_proxy=False, retries=0):
     if use_proxy:
-        proxy = pm.get_proxy()
-        if proxy[0]:
-            try:
-                response = session.get(url, timeout=5, proxies=proxy[0], verify=False)
-                response.raise_for_status()
-            except Exception as e:
-                if retries <= 3:
-                    pm.change_proxy(proxy[1])
-                    return call(session, url, True, retries + 1)
-                else:
-                    return None
+        return _call_with_proxy(session, url, retries)
+    else:
+        return _call_without_proxy(session, url, retries)
+
+
+def _call_with_proxy(session, url, retries=0):
+    LOGGER.info('_call_with_proxy')
+    proxy = PROXY_MANAGER.get_proxy()
+    if proxy[0]:
+        try:
+            response = session.get(url, timeout=TIMEOUT, proxies=proxy[0])
+            response.raise_for_status()
+        except Exception as e:
+            LOGGER.warning('_call_with_proxy error: e=%s', str(e))
+            if retries <= 3:
+                PROXY_MANAGER.change_proxy(proxy[1])
+                return _call_with_proxy(session, url, retries + 1)
             else:
-                return response
+                return None
+        else:
+            return response
+    else:
+        return None
+
+def _call_without_proxy(session, url, retries=0):
+    LOGGER.info('_call_without_proxy')
+    try:
+        response = session.get(url, timeout=TIMEOUT)
+        LOGGER.info('_call_without_proxy: try: response=%s', str(response))
+        response.raise_for_status()
+    except Exception as e:
+        LOGGER.warning('_call_without_proxy error: e=%s', str(e))
+        if retries <= 3:
+            return _call_without_proxy(session,url,retries + 1)
         else:
             return None
     else:
-        try:
-            response = session.get(url, timeout=5, verify=False)
-            response.raise_for_status()
-        except Exception as e:
-            # try with proxy
-            return call(session,url,use_proxy=True)
-        else:
-            return response
+        LOGGER.info('_call_without_proxy: else: response=%s', str(response))
+        return response
