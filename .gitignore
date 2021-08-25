@@ -1,5 +1,7 @@
 .idea
 tests/fixtures
+.DS_Store
+unit_tests_files
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

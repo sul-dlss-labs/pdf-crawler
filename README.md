@@ -19,9 +19,9 @@ $ cd pdf-crawler
 
 # Make a virtual environment with the tool of your choice. Please use Python version 3.6+
 # Here an example based on pyenv:
-$ pyenv virtualenv 3.6.6 pdf-crawler
+$ pyenv virtualenv 3.9.6 pdf-crawler # 3.6.x isn't compatible with MacOS 11, must use 3.7.8+
 
-$ pip install -e .
+$ pip install -e '.[tests]' # installs pytest etc
 
 ```
 
