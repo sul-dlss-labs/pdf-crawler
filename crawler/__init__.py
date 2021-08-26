@@ -1,3 +1,5 @@
+import csv
+import glob
 import logging
 import os
 from pathlib import Path
@@ -68,3 +70,28 @@ def crawl(url, output_dir, depth=2, method="normal", gecko_path="geckodriver", p
         process_handler=process_handler
     )
     crawler.crawl(url, depth)
+
+def generate_file_layout_script(output_dir, should_copy=True):
+    top_symlink_dirname = os.path.join(output_dir, '_readable_symlinks')
+    top_copy_dirname = os.path.join('_readable_filenames', output_dir)
+
+    for csv_filename in glob.glob(os.path.join(output_dir, '*.csv')):
+        with open(csv_filename, newline='') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+            for row in reader:
+                local_name = row[1]
+                canonical_filename = row[0]
+
+                if local_name == 'local_name' and canonical_filename == 'filename':
+                    continue # skip header row
+                (domain_dir, uuid_filename) = Path(local_name).parts[-2:]
+                readable_uniq_fname = canonical_filename.replace('.pdf', '') + '_' + uuid_filename
+
+                if should_copy:
+                    copy_dirname = os.path.join(top_copy_dirname, domain_dir)
+                    copy_path = os.path.join(copy_dirname, readable_uniq_fname)
+                    print(f'mkdir -p "{copy_dirname}" && rsync -cav \\\n  "{local_name}" \\\n  "{copy_path}"')
+                else:
+                    symlink_dirname = os.path.join(top_symlink_dirname, domain_dir)
+                    symlink_path = os.path.join(symlink_dirname, readable_uniq_fname)
+                    print(f'mkdir -p "{symlink_dirname}" && ln -s \\\n  "../../../{local_name}" \\\n  "{symlink_path}"')
