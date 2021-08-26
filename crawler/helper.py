@@ -57,7 +57,7 @@ def _call_with_proxy(session, url, retries=0):
             response = session.get(url, timeout=TIMEOUT, proxies=proxy[0])
             response.raise_for_status()
         except Exception as e:
-            LOGGER.warning('_call_with_proxy error: e=%s', str(e))
+            LOGGER.warning('_call_with_proxy error: e=%s', str(e), exc_info=e)
             if retries <= 3:
                 PROXY_MANAGER.change_proxy(proxy[1])
                 return _call_with_proxy(session, url, retries + 1)
@@ -75,7 +75,7 @@ def _call_without_proxy(session, url, retries=0):
         LOGGER.info('_call_without_proxy: try: response=%s', str(response))
         response.raise_for_status()
     except Exception as e:
-        LOGGER.warning('_call_without_proxy error: e=%s', str(e))
+        LOGGER.warning('_call_without_proxy error: e=%s', str(e), exc_info=e)
         if retries <= 3:
             return _call_without_proxy(session,url,retries + 1)
         else:

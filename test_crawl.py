@@ -22,7 +22,8 @@ def test_crawl_rendered_all(caplog):
     crawler.crawl(url="https://simfin.com/crawlingtest",output_dir=output_dir,method="rendered-all",gecko_path=gecko_path,depth=3)
 
     assert os.path.isdir(output_dir)
-    assert os.path.isfile(os.path.join(output_dir,"simfin.com.csv"))
+    assert os.path.isfile(os.path.join(output_dir, "simfin.com.csv"))
+    assert os.path.isfile(os.path.join(output_dir, '_crawl.log'))
 
     with open(os.path.join(output_dir,"simfin.com.csv"), newline='') as csvfile:
 
@@ -35,3 +36,4 @@ def test_crawl_rendered_all(caplog):
             assert reader[a][3] == files_to_be_found[a - 1][3]
             assert reader[a][4] == files_to_be_found[a - 1][4]
             assert reader[a][5] == files_to_be_found[a - 1][5]
+            assert os.path.isfile(reader[a][1])
